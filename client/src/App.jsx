@@ -1,12 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
+import { ExamProvider } from "./contexts/ExamContext";
 
-// Import Components
+
+// ================= AUTH =================
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import TailwindTest from './components/UIHelper/TailwindTest';
 
-// Import Pages
+// ================= STUDENT =================
+import StudentPanel from './panels/StudentPanel';
 import StudentDashboard from './pages/StudentDashboard';
 import StudentProfile from './pages/StudentProfile';
 import StudentCourses from './pages/StudentCourses';
@@ -18,55 +20,54 @@ import StudentExams from './pages/StudentExams';
 import StudentFees from './pages/StudentFees';
 import StudentLibrary from './pages/StudentLibrary';
 import StudentComplaints from './pages/StudentComplaints';
+import StudentExamAttempt from "./pages/StudentExamAttempt";
 
-// Import Library Components
+
+
 import LearningResources from './components/library/LearningResources';
 import BorrowedBooks from './components/library/BorrowedBooks';
 import PurchaseHistory from './components/library/PurchaseHistory';
-
-// Import Finance Components
 import TransactionHistory from './components/finance/TransactionHistory';
-
-// Import Assignment Components
 import HomeworkSubmission from './components/assignments/HomeworkSubmission';
-
-// Import additional components
 import Communications from './components/communications/Communications';
-import Security from './components/profile/Security';
 
-// Import Panels
-import StudentPanel from './panels/StudentPanel';
+// ================= TEACHER =================
+import TeacherPanel from './panels/TeacherPanel';
+import TeacherDashboard from "./pages/teacher/TeacherDashboard";
+import TeacherSubjects from './pages/teacher/TeacherSubjects';
+import TeacherProfile from './pages/teacher/TeacherProfile';
+import TeacherExamDetails from "./pages/teacher/TeacherExamDetails";
+import TeacherAddQuestion from "./pages/teacher/TeacherAddQuestion";
+import TeacherEditQuestion from "./pages/teacher/TeacherEditQuestion";
+import TeacherExamsList from './pages/teacher/TeacherExamsList';
+import TeacherCreateExam from "./pages/teacher/TeacherCreateExam";
+import TeacherExamSubmissions from "./pages/teacher/TeacherExamSubmissions";
+import TeacherStudents from './pages/teacher/TeacherStudents';
+import TeacherAssignments from './pages/teacher/TeacherAssignments';
+import TeacherSessions from './pages/teacher/TeacherSessions';
+import TeacherAttendance from './pages/teacher/TeacherAttendance';
+import TeacherAttendanceReports from './pages/teacher/TeacherAttendanceReport';
+import TeacherViewResults from './pages/teacher/TeacherViewResults';
+import TeacherEnterMarks from './pages/teacher/TeacherEnterMarks';
+import TeacherResults from './pages/teacher/TeacherResults';
+import AssignedComplaints from './pages/teacher/AssignedCompliants';
+import Messages from './pages/teacher/Messages';
+import CreateAssignment from './pages/teacher/CreateAssignment';
+
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true); // Set to true to bypass login
-  const [loading, setLoading] = useState(false);
 
-  // Initialize with default authentication
   useEffect(() => {
-    // Set a mock token to simulate logged in state
-    if (!localStorage.getItem('studentToken')) {
-      localStorage.setItem('studentToken', 'mock-jwt-token');
-    }
-    setIsAuthenticated(true);
-    setLoading(false);
+    localStorage.setItem('studentToken', 'mock');
   }, []);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <Router>
-      <div className="flex h-screen bg-gray-50">
+    <ExamProvider>
+      <Router>
         <Routes>
-          <Route path="/" element={<StudentPanel /> }>
+
+          {/* ================= STUDENT ================= */}
+          <Route path="/" element={<StudentPanel />}>
             <Route index element={<StudentDashboard />} />
             <Route path="dashboard" element={<StudentDashboard />} />
             <Route path="profile" element={<StudentProfile />} />
@@ -85,16 +86,57 @@ function App() {
             <Route path="transactions" element={<TransactionHistory />} />
             <Route path="complaints" element={<StudentComplaints />} />
             <Route path="communications" element={<Communications />} />
-            <Route path="feedback" element={<Communications />} />
-            <Route path="settings" element={<StudentProfile />} />
+            <Route path="exams/:examId/attempt" element={<StudentExamAttempt />} />
           </Route>
-          <Route path="/login" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
+
+          {/* ================= TEACHER ================= */}
+          <Route path="/teacher/*" element={<TeacherPanel />}>
+            <Route index element={<TeacherDashboard />} />
+            <Route path="subjects" element={<TeacherSubjects />} />
+            <Route path="profile" element={<TeacherProfile />} />
+            <Route path='students' element={<TeacherStudents />} />
+            <Route path='assignments' element={<TeacherAssignments />} />
+            <Route path='sessions' element={<TeacherSessions />} />
+            <Route path='attendance' element={<TeacherAttendance />} />
+            <Route path='attendance-reports' element={<TeacherAttendanceReports />} />
+            <Route path='create-assignments' element={<CreateAssignment />} />
+            
+
+            <Route path="exams">
+              <Route index element={<TeacherExamsList />} />
+              <Route path=":examId" element={<TeacherExamDetails />} />
+              <Route path=":examId/add-question" element={<TeacherAddQuestion />} />
+              <Route
+                path=":examId/edit-question/:questionId"
+                element={<TeacherEditQuestion />}
+              />
+              <Route path="create" element={<TeacherCreateExam />} />
+              <Route
+  path=":examId/submissions"
+  element={<TeacherExamSubmissions />}
+/>
+
+            </Route>
+            <Route path="results">
+  <Route index element={<TeacherResults />} />
+  <Route path="enter-marks" element={<TeacherEnterMarks />} />
+  <Route path="view-results" element={<TeacherViewResults />} />
+</Route>
+          <Route path="complaints" element={<AssignedComplaints />} />
+          <Route path="messages" element={<Messages />} />
+
+          </Route>
+
+          {/* ================= AUTH ================= */}
+          <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/tailwind-test" element={<TailwindTest />} />
-          <Route path="/*" element={<Navigate to="/" replace />} />
+
+          {/* ================= FALLBACK ================= */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+
         </Routes>
-      </div>
-    </Router>
+      </Router>
+    </ExamProvider>
   );
 }
 

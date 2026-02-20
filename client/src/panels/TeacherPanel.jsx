@@ -2,21 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import useLocalStorage from '../hooks/useLocalStorage';
 
-const StudentPanel = () => {
+const TeacherPanel = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [openDropdown, setOpenDropdown] = useState(null);
 
-  const [user] = useLocalStorage('studentUser', {
-    name: 'Ahmed Mohamed',
-    role: 'Student',
-    studentId: 'STU2024001',
-    email: 'ahmed.mohamed@example.com',
+  const [user] = useLocalStorage('teacherUser', {
+    name: 'Ustad Abdul Rahman',
+    role: 'Teacher',
+    employeeId: 'TCH2024001',
+    email: 'teacher@example.com',
   });
 
-  /* ================= RESIZE HANDLER ================= */
+  /* ================= RESIZE ================= */
   useEffect(() => {
     const handleResize = () => {
       setSidebarOpen(window.innerWidth >= 640);
@@ -26,75 +26,66 @@ const StudentPanel = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  /* ================= MENU ================= */
+  /* ================= UPDATED TEACHER MENU ================= */
   const menuItems = [
-    {
-      id: 'dashboard',
-      label: 'Dashboard',
-      path: '',
-      type: 'link',
-    },
+    { id: 'dashboard', label: 'Dashboard', path: '', type: 'link' },
+
     {
       id: 'academic',
       label: 'Academic',
       type: 'dropdown',
       items: [
-        { id: 'courses', label: 'My Courses', path: 'courses' },
-        { id: 'schedule', label: 'Schedule', path: 'schedule' },
-        { id: 'attendance', label: 'Attendance', path: 'attendance' },
-        { id: 'exams', label: 'Exams', path: 'exams' },
-        { id: 'results', label: 'Results', path: 'results' },
+        { id: 'subjects', label: 'My Subjects', path: 'subjects' },
+        { id: 'students', label: 'My Students', path: 'students' },
+        { id: 'assignments', label: 'Assignments', path: 'assignments' },
       ],
     },
+
     {
-      id: 'assignments',
-      label: 'Assignments',
-      type: 'dropdown',
-      items: [
-        { id: 'assignments', label: 'All Assignments', path: 'assignments' },
-        { id: 'homework', label: 'Submit Homework', path: 'homework-submission' },
-      ],
-    },
+  id: 'attendance',
+  label: 'Attendance',
+  type: 'dropdown',
+  items: [
+    { id: 'sessions', label: 'Class Sessions', path: 'sessions' },
+    { id: 'mark', label: 'Mark Attendance', path: 'attendance' },
+    { id: 'reports', label: 'Attendance Reports', path: 'attendance-reports' },
+  ],
+},
+
     {
-      id: 'library',
-      label: 'Library',
-      type: 'dropdown',
-      items: [
-        { id: 'resources', label: 'Learning Resources', path: 'resources' },
-        { id: 'borrowed', label: 'Borrowed Books', path: 'borrowed' },
-        { id: 'purchase', label: 'Purchase History', path: 'purchase' },
-      ],
-    },
+  id: 'exams',
+  label: 'Exams',
+  type: 'dropdown',
+  items: [
+    { id: 'exams', label: 'My Exams', path: 'exams' },
+    { id: 'create-exam', label: 'Create Exam', path: 'exams/create' },
+  ],
+},
     {
-      id: 'finance',
-      label: 'Finance',
-      type: 'dropdown',
-      items: [
-        { id: 'fees', label: 'Fees & Payments', path: 'fees' },
-        { id: 'transactions', label: 'Transaction History', path: 'transactions' },
-      ],
-    },
+  id: 'results',
+  label: 'Results',
+  type: 'dropdown',
+  items: [
+    { id: 'enter-marks', label: 'Enter Marks', path: 'results/enter-marks' },
+    { id: 'view-results', label: 'View Results', path: 'results/view-results' },
+  ],
+},
     {
       id: 'communications',
       label: 'Communications',
       type: 'dropdown',
       items: [
-        { id: 'communications', label: 'Messages', path: 'communications' },
-        { id: 'complaints', label: 'Complaints', path: 'complaints' },
-        { id: 'feedback', label: 'Feedback', path: 'feedback' },
+        { id: 'complaints', label: 'Assigned Complaints', path: 'complaints' },
+        { id: 'messages', label: 'Messages', path: 'messages' },
       ],
     },
-    {
-      id: 'profile',
-      label: 'Profile',
-      type: 'dropdown',
-      items: [{ id: 'profile', label: 'Personal Info', path: 'profile' }],
-    },
+
+    { id: 'profile', label: 'Profile', path: 'profile', type: 'link' },
   ];
 
   /* ================= HELPERS ================= */
   const handleNavigation = (path) => {
-    navigate(path ? `/${path}` : '/');
+    navigate(path ? `/teacher/${path}` : '/teacher');
     if (window.innerWidth < 640) setSidebarOpen(false);
   };
 
@@ -103,19 +94,18 @@ const StudentPanel = () => {
   };
 
   const isActive = (path) => {
-    if (!path) return location.pathname === '/';
-    return location.pathname === `/${path}`;
+    if (!path) return location.pathname === '/teacher';
+    return location.pathname === `/teacher/${path}`;
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('studentToken');
+    localStorage.removeItem('teacherToken');
     navigate('/');
   };
 
   /* ================= RENDER ================= */
   return (
     <div className="flex h-screen bg-gray-100">
-      {/* SIDEBAR */}
       <aside
         className={`bg-white shadow-md fixed md:relative z-30 h-full transition-all ${
           sidebarOpen ? 'w-64' : 'w-20'
@@ -126,7 +116,7 @@ const StudentPanel = () => {
             Madrasa EMIS
           </h1>
           <p className={`text-xs ${sidebarOpen ? 'block' : 'hidden'}`}>
-            Student Panel
+            Teacher Panel
           </p>
         </div>
 
@@ -183,6 +173,7 @@ const StudentPanel = () => {
         <div className="p-4 border-t text-sm">
           <p className="font-medium">{user.name}</p>
           <p className="text-gray-500">{user.role}</p>
+
           <button
             onClick={handleLogout}
             className="mt-2 text-red-600 hover:underline"
@@ -192,7 +183,6 @@ const StudentPanel = () => {
         </div>
       </aside>
 
-      {/* CONTENT */}
       <main className="flex-1 ml-0 md:ml-64 overflow-y-auto">
         <Outlet />
       </main>
@@ -200,5 +190,4 @@ const StudentPanel = () => {
   );
 };
 
-export default StudentPanel;
-
+export default TeacherPanel;

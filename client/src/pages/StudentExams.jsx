@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useExam } from '../contexts/ExamContext';
+
 import Card from '../components/UIHelper/Card';
 import Badge from '../components/UIHelper/Badge';
 import Button from '../components/UIHelper/Button';
@@ -81,6 +84,24 @@ const StudentExams = () => {
 
   const [activeTab, setActiveTab] = useState('upcoming');
 
+  const navigate = useNavigate();
+const { exams: contextExams, submissions } = useExam();
+
+const studentId = "student_001";
+
+const publishedExams = contextExams.filter(
+  e => e.status === "published"
+);
+
+const studentSubmissions = submissions.filter(
+  s => s.studentId === studentId
+);
+
+const hasSubmitted = (examId) => {
+  return studentSubmissions.find(s => s.examId === examId);
+};
+
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'scheduled':
@@ -156,96 +177,159 @@ const StudentExams = () => {
       {activeTab === 'upcoming' && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
-            {exams
-              .filter(exam => exam.status !== 'completed')
-              .map(exam => (
-                <Card key={exam.id} className="hover:shadow-md transition-shadow">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{exam.title}</h3>
-                      <p className="text-gray-600">{exam.course}</p>
-                    </div>
-                    <div className="flex space-x-2">
-                      <Badge variant={getTypeColor(exam.type)}>
-                        {exam.type.charAt(0).toUpperCase() + exam.type.slice(1)}
-                      </Badge>
-                      <Badge variant={getStatusColor(exam.status)}>
-                        {exam.status.charAt(0).toUpperCase() + exam.status.slice(1)}
-                      </Badge>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <p className="text-sm text-gray-600">Date</p>
-                      <p className="font-medium">{formatDate(exam.date)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Time</p>
-                      <p className="font-medium">{exam.time}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Duration</p>
-                      <p className="font-medium">{exam.duration}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Location</p>
-                      <p className="font-medium">{exam.location}</p>
-                    </div>
-                  </div>
-                  
-                  <p className="text-gray-700 mb-4">{exam.description}</p>
-                  
-                  <div className="flex justify-between items-center">
-                    <Button variant="outline" size="sm">
-                      View Details
-                    </Button>
-                    <Button variant="primary" size="sm">
-                      Prepare for Exam
-                    </Button>
-                  </div>
-                </Card>
-              ))}
-          </div>
+  {publishedExams.map(exam => (
+    <Card key={exam.id} className="hover:shadow-md transition-shadow">
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">
+            {exam.title}
+          </h3>
+          <p className="text-gray-600">
+            {exam.course || "—"}
+          </p>
+        </div>
+
+        <div className="flex space-x-2">
+          <Badge variant="success">
+            Published
+          </Badge>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <p className="text-sm text-gray-600">Date</p>
+          <p className="font-medium">
+            {exam.publishDate
+              ? formatDate(exam.publishDate)
+              : "—"}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-sm text-gray-600">Duration</p>
+          <p className="font-medium">
+            {exam.duration} minutes
+          </p>
+        </div>
+
+        <div>
+          <p className="text-sm text-gray-600">Total Marks</p>
+          <p className="font-medium">
+            {exam.totalMarks}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-sm text-gray-600">Deadline</p>
+          <p className="font-medium">
+            {exam.deadline
+              ? formatDate(exam.deadline)
+              : "—"}
+          </p>
+        </div>
+      </div>
+
+      <p className="text-gray-700 mb-4">
+        {exam.description || "No description provided."}
+      </p>
+
+      <div className="flex justify-between items-center">
+        <Button variant="outline" size="sm">
+          View Details
+        </Button>
+
+        {!hasSubmitted(exam.id) ? (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() =>
+              navigate(`/exams/${exam.id}/attempt`)
+            }
+          >
+            Attempt Exam
+          </Button>
+        ) : (
+          <Badge variant="info">
+            Submitted
+          </Badge>
+        )}
+      </div>
+    </Card>
+  ))}
+</div>
+
         </div>
       )}
 
       {activeTab === 'past' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
-            {pastExams.map(exam => (
-              <Card key={exam.id} className="hover:shadow-md transition-shadow">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900">{exam.title}</h3>
-                    <p className="text-gray-600">{exam.course}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-green-600">{exam.score}%</p>
-                    <p className="text-sm text-gray-600">Grade: {exam.grade}</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Date</p>
-                    <p className="font-medium">{formatDate(exam.date)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Score</p>
-                    <p className="font-medium">{exam.score}/{exam.maxScore}</p>
-                  </div>
-                </div>
-                
-                <div className="border-t border-gray-200 pt-4">
-                  <p className="text-sm text-gray-600">Feedback:</p>
-                  <p className="text-gray-700">{exam.feedback}</p>
-                </div>
-              </Card>
-            ))}
+  <div className="space-y-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
+
+      {/* 🔥 REAL SUBMISSIONS */}
+      {studentSubmissions.map(submission => {
+        const exam = contextExams.find(
+          e => e.id === submission.examId
+        );
+
+        return (
+          <Card key={submission.id} className="hover:shadow-md transition-shadow">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {exam?.title}
+                </h3>
+                <p className="text-gray-600">
+                  {new Date(submission.submittedAt).toLocaleString()}
+                </p>
+              </div>
+
+              <div className="text-right">
+                <p className="text-2xl font-bold text-green-600">
+                  {submission.score} / {submission.totalMarks}
+                </p>
+              </div>
+            </div>
+          </Card>
+        );
+      })}
+
+      {/* 📌 OLD STATIC DATA (دست نخورده) */}
+      {pastExams.map(exam => (
+        <Card key={exam.id} className="hover:shadow-md transition-shadow">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">{exam.title}</h3>
+              <p className="text-gray-600">{exam.course}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-green-600">{exam.score}%</p>
+              <p className="text-sm text-gray-600">Grade: {exam.grade}</p>
+            </div>
           </div>
-        </div>
-      )}
+
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <p className="text-sm text-gray-600">Date</p>
+              <p className="font-medium">{formatDate(exam.date)}</p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Score</p>
+              <p className="font-medium">{exam.score}/{exam.maxScore}</p>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-200 pt-4">
+            <p className="text-sm text-gray-600">Feedback:</p>
+            <p className="text-gray-700">{exam.feedback}</p>
+          </div>
+        </Card>
+      ))}
+
+    </div>
+  </div>
+)}
+
 
       {/* Exam Preparation Tips */}
       <div className="mt-8">
